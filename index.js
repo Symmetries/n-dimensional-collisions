@@ -19,12 +19,12 @@
 var t = 0;
 
 var hyperBalls = [];
-var dim = 1;
+var dim = 2;
 var numBalls = 7;
 var sliders = [];
 var canvas;
 var depth;
-var displayDim = 1;
+var displayDim = 2;
 var extraDimSlider;
 var dimSlider;
 var oldValue = 1;
@@ -47,18 +47,22 @@ function restart(){
   }
   depth = Math.min(width, height);
   hyperBalls = [];
+  dimensions = [width, height];
+  for (var i = 2; i < dim; i++){
+    dimensions.push(depth);
+  }  
   for (var i = 0; i < numBalls; i++){
     //console.log("trying to make ball", i);
     var overlap = true;
     var test;
-    r = depth/4 * Math.random();
+    r = Math.min(...dimensions)/2 * Math.random();
     while (overlap){
       r *= 0.99;
       var v = [];
       var p = [];
       for (var j = 0; j < dim; j++){
           v.push(200*Math.random());
-          p.push(r + (Math.min(width, height)-2*r)*Math.random());
+          p.push(r + (dimensions[j]-2*r)*Math.random());
       }
       test = new HyperBall(new Vector(p), r, r**dim, new Vector(v));
       overlap = false;
@@ -70,8 +74,10 @@ function restart(){
     }
     hyperBalls.push(test);
   }
-  dimSlider = createSlider(1, 3, displayDim, 1);
-  extraDimSlider = createSlider(0, 4, dim-displayDim, 1);
+  dimSlider = createSlider(0, 3, displayDim, 1);
+  extraDimSlider = createSlider(0, 7, dim-displayDim, 1);
+  dimSlider.position(20, 20);
+  extraDimSlider.position(20, 80);
   for (i = displayDim; i < dim; i++){
     sliders.push(createSlider(0, depth, depth/2));
   }
@@ -123,6 +129,7 @@ function draw() {
     fill(255);
     dt = 0.01;
   } else if (displayDim === 3){
+    depth = Math.min(width, height);
     var tri = 3;
     noFill();
     push();
@@ -178,6 +185,9 @@ function draw() {
     }
     var result = hyperBalls[i].intersect(values);
     if (result != null){
+      if (displayDim === 0){
+        arc(width/2, height/2, 2*result.r, 2 * result.r, 0, 2 * PI);
+      }
       if (displayDim === 1){
         arc(result.p.get(0), height/2, 2*result.r, 2 * result.r, 0, 2 * PI);
       }
