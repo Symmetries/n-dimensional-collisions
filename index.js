@@ -61,7 +61,7 @@ function restart(){
       var v = [];
       var p = [];
       for (var j = 0; j < dim; j++){
-          v.push(200*Math.random());
+          v.push(100*Math.random());
           p.push(r + (dimensions[j]-2*r)*Math.random());
       }
       test = new HyperBall(new Vector(p), r, r**dim, new Vector(v));
@@ -133,8 +133,8 @@ function draw() {
     var tri = 3;
     noFill();
     push();
-    translate(0, height/2, depth);
-    pointLight(100, 100, 100, 0);
+    //translate(width/2-mouseX, height/2-mouseY, 0);
+    pointLight(255, 255, 255, 0);
     pop();
     dt = 0.01;
     push();
@@ -165,57 +165,55 @@ function draw() {
   
   dt = (Date.now()- previous)/1000;
   previous = Date.now();
-  if (dt > 500){
-    dt = 0;
-  }
-  
-  dimensions = [width, height];
-  for (var i = 2; i < dim; i++){
-    dimensions.push(depth);
-  }
-  HyperBall.updateAll(hyperBalls, dt, dimensions);
-  for (var i = 0; i < hyperBalls.length; i++){
-    values = [];
-    for (var j = 0; j < dim; j++){
-      if (j < displayDim){
-        values.push(null);
-      } else {
-        values.push(sliders[j-displayDim].value());
+  if (dt < 0.5){
+    dimensions = [width, height];
+    for (var i = 2; i < dim; i++){
+      dimensions.push(depth);
+    }
+    HyperBall.updateAll(hyperBalls, dt, dimensions);
+    for (var i = 0; i < hyperBalls.length; i++){
+      values = [];
+      for (var j = 0; j < dim; j++){
+        if (j < displayDim){
+          values.push(null);
+        } else {
+          values.push(sliders[j-displayDim].value());
+        }
+      }
+      var result = hyperBalls[i].intersect(values);
+      if (result != null){
+        if (displayDim === 0){
+          arc(width/2, height/2, 2*result.r, 2 * result.r, 0, 2 * PI);
+        }
+        if (displayDim === 1){
+          arc(result.p.get(0), height/2, 2*result.r, 2 * result.r, 0, 2 * PI);
+        }
+        else if (displayDim === 2){
+          arc(result.p.get(0), result.p.get(1), 2*result.r, 2*result.r, 0, 2 *PI);
+        } else if (displayDim === 3){
+          push();
+          translate(width/2-result.p.get(0), height/2-result.p.get(1), -result.p.get(2));
+          sphere(result.r, 12, 8);
+          pop();
+        }
       }
     }
-    var result = hyperBalls[i].intersect(values);
-    if (result != null){
-      if (displayDim === 0){
-        arc(width/2, height/2, 2*result.r, 2 * result.r, 0, 2 * PI);
+    
+    if (oldValue != dimSlider.value() || oldExtraValue != extraDimSlider.value()){
+      //console.log("changed!");
+      oldValue = dimSlider.value();
+      oldExtraValue = extraDimSlider.value();
+      displayDim = oldValue;
+      dim = oldValue+oldExtraValue;
+      console.log(dim, displayDim);
+      for (var i = 0; i < sliders.length; i++){
+        sliders[i].remove();
       }
-      if (displayDim === 1){
-        arc(result.p.get(0), height/2, 2*result.r, 2 * result.r, 0, 2 * PI);
-      }
-      else if (displayDim === 2){
-        arc(result.p.get(0), result.p.get(1), 2*result.r, 2*result.r, 0, 2 *PI);
-      } else if (displayDim === 3){
-        push();
-        translate(width/2-result.p.get(0), height/2-result.p.get(1), -result.p.get(2));
-        sphere(result.r, 12, 8);
-        pop();
-      }
+      dimSlider.remove();
+      extraDimSlider.remove();
+      sliders = [];
+      canvas.remove();
+      restart();
     }
-  }
-  
-  if (oldValue != dimSlider.value() || oldExtraValue != extraDimSlider.value()){
-    //console.log("changed!");
-    oldValue = dimSlider.value();
-    oldExtraValue = extraDimSlider.value();
-    displayDim = oldValue;
-    dim = oldValue+oldExtraValue;
-    console.log(dim, displayDim);
-    for (var i = 0; i < sliders.length; i++){
-      sliders[i].remove();
-    }
-    dimSlider.remove();
-    extraDimSlider.remove();
-    sliders = [];
-    canvas.remove();
-    restart();
   }
 }
