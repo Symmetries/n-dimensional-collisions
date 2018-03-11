@@ -19,32 +19,33 @@
 var t = 0;
 
 var hyperBalls = [];
-var dim = 2;
+var dim = 3;
 var numBalls = 7;
 var sliders = [];
+var paras = [];
 var canvas;
 var depth;
-var displayDim = 2;
+var displayDim = 3;
 var extraDimSlider;
 var dimSlider;
-var oldValue = 1;
+var oldValue = displayDim;
 var oldExtraValue = 0;
 var previous;
+var displayDimPara;
+var extraDimPara;
+var descriptionPara;
 
-var important = p5.RendererGL;
 
 function restart(){
   numBalls = 2**dim;
-  if (displayDim === 3){
-    console.log("ooooh 3D :o")
-    p5.RendererGL = important;
-    canvas = createCanvas(window.innerWidth-20, window.innerHeight-100, WEBGL);
-  } else {
-    console.log("making a version that has ", displayDim," dimensions");
-    p5.RendererGL = null;
-    canvas = createCanvas(window.innerWidth-20, window.innerHeight-100);
+  // if (displayDim === 3){
+  //   console.log("ooooh 3D :o")
+  //   canvas = createCanvas(window.innerWidth-20, window.innerHeight-100, WEBGL);
+  // } else {
+  //   console.log("making a version that has ", displayDim," dimensions");
+  //   canvas = createCanvas(window.innerWidth-20, window.innerHeight-100);
     
-  }
+  // }
   depth = Math.min(width, height);
   hyperBalls = [];
   dimensions = [width, height];
@@ -61,7 +62,7 @@ function restart(){
       var v = [];
       var p = [];
       for (var j = 0; j < dim; j++){
-          v.push(100*Math.random());
+          v.push(50*Math.random());
           p.push(r + (dimensions[j]-2*r)*Math.random());
       }
       test = new HyperBall(new Vector(p), r, r**dim, new Vector(v));
@@ -74,17 +75,26 @@ function restart(){
     }
     hyperBalls.push(test);
   }
+  descriptionPara = createP("There are currently " + displayDim + 
+    " visible dimension(s), " + (dim - displayDim) + " hidden dimension(s)" +
+    " making a total of " + dim + " dimension(s). There are " + numBalls + 
+    " " + (dim + "-balls") + " in the " + (dim + " dimensional") + 
+    " box.");
+  displayDimPara = createP("Number of visible dimensions:");
   dimSlider = createSlider(0, 3, displayDim, 1);
+  extraDimPara = createP("Number of hidden dimensions:");
   extraDimSlider = createSlider(0, 7, dim-displayDim, 1);
-  dimSlider.position(20, 20);
-  extraDimSlider.position(20, 80);
+  //dimSlider.position(20, 20);
+  //extraDimSlider.position(20, 80);
   for (i = displayDim; i < dim; i++){
+    paras.push(createP("x" + (i+1) + ":"));
     sliders.push(createSlider(0, depth, depth/2));
   }
 }
 
 
 function setup(){
+  canvas = createCanvas(window.innerWidth/2, window.innerHeight/2, WEBGL);
   restart();
   previous = Date.now();
   // canvas = createCanvas(window.innerWidth-20, window.innerHeight-100);
@@ -123,43 +133,43 @@ function setup(){
 
 function draw() {
   background(0);
+  //sphere(10);
   //console.log("draw loop!")
   var dt;
   if (displayDim === 2 || displayDim === 1){
     fill(255);
     dt = 0.01;
   } else if (displayDim === 3){
-    depth = Math.min(width, height);
-    var tri = 3;
-    noFill();
-    push();
-    //translate(width/2-mouseX, height/2-mouseY, 0);
-    pointLight(255, 255, 255, 0);
-    pop();
+    noStroke();
     dt = 0.01;
     push();
+    fill(50);
     translate(0, 0, -depth);
-    plane(width, height, tri, tri);
+    plane(width, height);
     pop();
     push();
+    fill(10);
     translate(0, height/2, -depth/2);
     rotateX(-PI/2);
-    plane(width, depth, tri, tri);
+    plane(width, depth);
     pop();
     push();
+    fill(10);
     translate(0, -height/2, -depth/2);
     rotateX(PI/2);
-    plane(width, depth, tri, tri);
+    plane(width, depth);
     pop();
     push();
+    fill(30);
     translate(width/2, 0, -depth/2);
     rotateY(-PI/2);
-    plane(height, depth, tri, tri);
+    plane(height, depth);
     pop();
     push();
+    fill(30);
     translate(-width/2, 0, -depth/2);
     rotateY(PI/2);
-    plane(height, depth, tri, tri);
+    plane(height, depth);
     pop();
   }
   
@@ -183,15 +193,24 @@ function draw() {
       var result = hyperBalls[i].intersect(values);
       if (result != null){
         if (displayDim === 0){
-          arc(width/2, height/2, 2*result.r, 2 * result.r, 0, 2 * PI);
-        }
-        if (displayDim === 1){
-          arc(result.p.get(0), height/2, 2*result.r, 2 * result.r, 0, 2 * PI);
-        }
-        else if (displayDim === 2){
-          arc(result.p.get(0), result.p.get(1), 2*result.r, 2*result.r, 0, 2 *PI);
+          ellipse(0, 0, 10, 10);
+          //arc(width/2, height/2, 2*result.r, 2 * result.r, 0, 2 * PI);
+        } else if (displayDim === 1){
+          var rectHeight = 10;
+          fill(0, 255, 0);
+          stroke(0, 255, 0);
+          rect(result.p.get(0) - result.r - width/2, -rectHeight/2,
+            2*result.r, rectHeight, 
+            rectHeight, rectHeight, rectHeight, rectHeight);
+        } else if (displayDim === 2){
+          fill(0, 255, 0);
+          ellipse(result.p.get(0) - width/2,
+            result.p.get(1) - height/2,
+            2*result.r, 2*result.r);
         } else if (displayDim === 3){
           push();
+          noFill();
+          stroke(0, 255, 0);
           translate(width/2-result.p.get(0), height/2-result.p.get(1), -result.p.get(2));
           sphere(result.r, 12, 8);
           pop();
@@ -200,7 +219,7 @@ function draw() {
     }
     
     if (oldValue != dimSlider.value() || oldExtraValue != extraDimSlider.value()){
-      //console.log("changed!");
+      console.log("changed!");
       oldValue = dimSlider.value();
       oldExtraValue = extraDimSlider.value();
       displayDim = oldValue;
@@ -208,11 +227,16 @@ function draw() {
       console.log(dim, displayDim);
       for (var i = 0; i < sliders.length; i++){
         sliders[i].remove();
+        paras[i].remove();
       }
       dimSlider.remove();
       extraDimSlider.remove();
+      displayDimPara.remove();
+      extraDimPara.remove();
+      descriptionPara.remove();
       sliders = [];
-      canvas.remove();
+      paras = [];
+      //canvas.remove();
       restart();
     }
   }
