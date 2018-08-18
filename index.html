@@ -5,15 +5,23 @@
     <script src="vector.js"></script>
     <script src="hypersphere.js"></script>
     <script src="index.js"></script>
+    <link rel="stylesheet" type="text/css" href="main.css">
   </head>
   <body>
     <h1>N-Dimensional Collisions</h1>
-    <p>To use this, use the sliders below the canvas. The
-    top slider controls how many dimensions are visible on the screen. It is 
-    a number from 0 to 3. The slider below it controls how many 'hidden' 
-    dimensions there are. It is a number between 0 and 7. The remaining hidden
-    dimensions can be controlled with sliders, which provide a 0, 1, 2, or 3
-    dimensional cross section of the actual n-dimensional box full 
-    of n-balls.</p>
+    <div>
+      <p> Visible Dimension(s): </p>
+      <button id="decrementDisplayDimButton">-</button>
+      <span id="displayDimSpan"></span>
+      <button id="incrementDisplayDimButton">+</button>
+    </div>
+    <div>
+      <p> Hidden Dimension(s): </p>
+      <button id="decrementExtraDimButton">-</button>
+      <span id="extraDimSpan"></span>
+      <button id="incrementExtraDimButton">+</button>
+    </div>
+    <p> Total Dimension(s): <span id="totalDimSpan"></span></p>
+    <p> Hyperball(s): <span id="hyperballSpan"></span></p>
   </body>
 </html>
