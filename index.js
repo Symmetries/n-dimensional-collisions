@@ -19,8 +19,8 @@
 let t = 0;
 
 let hyperBalls = [];
-let dim = 3;
-let extraDim = 0;
+let dim = 4;
+let extraDim = 1;
 let displayDim = 3;
 let numBalls;
 let sliders = [];
@@ -111,10 +111,11 @@ function buildUI() {
 function createSliders() {
   for (i = 0; i < extraDim; i++){
     divs.push(createDiv(""));
-    paras.push(createP("x" + (i+displayDim+1) + ":"));
+    paras.push(createP("x<sub>" + (i+displayDim+1) + "</sub>:"));
     sliders.push(createSlider(0, depth, depth/2));
     divs[i].child(paras[i]);
     divs[i].child(sliders[i]);
+    divs[i].parent(document.querySelector("footer"));
   }
 }
 
@@ -133,6 +134,7 @@ function setup(){
   canvas = createCanvas(window.innerWidth, window.innerHeight, WEBGL);
   buildUI();
   restart();
+  createSliders();
   updateUIValues();
   previousTime = Date.now();
 }
@@ -141,7 +143,7 @@ function draw() {
   background(50);
   var dt;
   if (displayDim === 2 || displayDim === 1){
-    fill(0, 255, 0);
+    fill(0, 200, 0);
   } else if (displayDim === 3){
     noStroke();
     push();
@@ -174,7 +176,8 @@ function draw() {
     plane(depth, height);
     pop();
     noFill();
-    stroke(0, 255, 0);
+    stroke(0, 200, 0);
+    strokeWeight(5);
   }
   
   dt = (Date.now()- previousTime)/1000;
@@ -211,7 +214,8 @@ function draw() {
         } else if (displayDim === 3){
           push();
           translate(width/2-result.p.get(0), height/2-result.p.get(1), -result.p.get(2));
-          sphere(result.r, 12, 8);
+	  strokeWeight(map(result.r, 0, depth/2, 0, 5));
+          sphere(result.r, 10, 6);
           pop();
         }
       }
@@ -219,7 +223,7 @@ function draw() {
   }
 }
 
-
 function windowResized() {
   resizeCanvas(window.innerWidth, window.innerHeight);
+  restart();
 }

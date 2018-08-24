@@ -5,40 +5,64 @@ canvas {
 	left: 0;
 	z-index: -1;
 }
+p:hover, h1:hover {
+	opacity: 1;
+}
 p {
-	margin: 0.25em 0 0.25em 0;
+	opacity: 0.3;
+	margin: 0;/*0.25em 0 0.25em 0;*/
 	font-size: 100%;
 }
 h1 {
-	font-size: 150%;
+	font-size: 120%;
 }
 body {
 	color: white;
 }
 html {
-	font: 60px arial, sans-serif;
+	background-color: black;
+	font: 50px arial, sans-serif;
 }
 div {
 	display: flex;
 	padding: 0;
 	margin: 0;
 	align-items: center;
+	opacity: 0.3;
 }
+div p {
+	opacity: 1;
+}
+div:hover p {
+	opacity: 1;
+}
+div:hover {
+	opacity: 1;
+}
+
+footer {
+	display: block;
+	margin: 0;
+	padding: 0;
+	position: absolute;
+	bottom: 1%;
+	width: 50%;
+}
+
 button {
 	opacity: 0.5;
 	border-radius: 50%;
 	font-size: 1em;
 	font-family: monospace;
-	width: 1.25em;
-	height: 1.25em;
+	width: 2em;
+	height: 2em;
 	background-color: blue;
 	border: none;
 	outline: none;
-	margin: 0;
+	margin: 0 0.3em 0 0.3em;
 	padding: 0;
 }
 button:hover {
-	box-shadow: 0 0.5em 0.6em 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
 	opacity: 1;
 }
 button:disabled {
@@ -47,20 +71,25 @@ button:disabled {
 }
 button:active {
 	background-color: darkblue; 
+	opacity: 1;
 	transform: translateY(0.1em);
 }
 input[type=range] {
 	-webkit-appearance: none;
 	border-radius: 0.25rem;
-	width: 50%;
+	width: 100%;
 	height: 0.5rem;
 	background: #d3d3d3;
 	outline: none;
 	opacity: 0.5;
+	margin-left: 3em;
 	-webkit-transition: .1s;
 	transition: opacity .1s;
 }
-input[type=range]:hover {
+div:hover input[type=range] {
+	opacity: 1;
+}
+div:active input[type=range] {
 	opacity: 1;
 }
 input[type=range]::-webkit-slider-thumb {

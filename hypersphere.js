@@ -31,7 +31,7 @@ class HyperBall{
             var newValues = [];
             var newCoords = [];
             var rSquared = this.r**2-(this.p.get(firstIndex)-firstNum)**2;
-            if (rSquared > 1){
+            if (rSquared > 0){
                 for (var i = 0; i < values.length; i++){
                     if (i !== firstIndex){
                         newValues.push(values[i]);
