@@ -1,34 +1,50 @@
 /*global createCanvas*/
 /*global WEBGL*/
 /*global background*/
-/*global mouseX*/
-/*global mouseY*/
 /*global height*/
 /*global width*/
-/*global pointLight*/
 /*global push*/
 /*global translate*/
 /*global rotateX*/
 /*global rotateY*/
 /*global pop*/
-/*global box*/
 /*global PI*/
 /*global HyperBall*/
 /*global Vector*/
 
-let t = 0;
-
-let hyperBalls = [];
-let dim = 4;
-let extraDim = 1;
-let displayDim = 3;
-let numBalls;
-let sliders = [];
-let paras = [];
-let divs = [];
-let canvas;
-let depth;
 let previousTime;
+let hyperBalls;
+let dim;
+let extraDim;
+let displayDim;
+let numBalls;
+let depth;
+
+let sliders;
+let paras
+let divs;
+let canvas;
+
+let backgroundColor;
+let sideColor;
+let bottomColor;
+let backColor;
+let ballColor;
+
+function init() {
+  previousTime = Date.now();
+  hyperBalls = [];
+  dim = 4;
+  extraDim = 1;
+  displayDim = 3;
+  sliders = [];
+  paras = [];
+  divs = [];
+  backgroundColor = 50;
+  sideColor = 0;
+  backColor = 0;
+  ballColor = color(0, 200, 0);
+}
 
 function restart(){
   dim = displayDim + extraDim
@@ -36,24 +52,24 @@ function restart(){
   depth = Math.min(width, height);
   hyperBalls = [];
   dimensions = [width, height];
-  for (var i = 2; i < dim; i++){
+  for (let i = 2; i < dim; i++){
     dimensions.push(depth);
   }  
-  for (var i = 0; i < numBalls; i++){
+  for (let i = 0; i < numBalls; i++){
     var overlap = true;
     var test;
     r = Math.min(...dimensions)/2 * Math.random();
     while (overlap){
       r *= 0.99;
-      var v = [];
-      var p = [];
-      for (var j = 0; j < dim; j++){
+      let v = [];
+      let p = [];
+      for (let j = 0; j < dim; j++){
           v.push(50*Math.random());
           p.push(r + (dimensions[j]-2*r)*Math.random());
       }
       test = new HyperBall(new Vector(p), r, r**dim, new Vector(v));
       overlap = false;
-      for (var j = 0; j < hyperBalls.length; j++){
+      for (let j = 0; j < hyperBalls.length; j++){
         if (HyperBall.overlap(test, hyperBalls[j], false)) {
           overlap = true;
         }
@@ -61,6 +77,9 @@ function restart(){
     }
     hyperBalls.push(test);
   }
+  removeSliders();
+  createSliders();
+  updateUIValues();
 }
 
 function updateUIValues() {
@@ -78,38 +97,26 @@ function buildUI() {
   document.querySelector("#decrementDisplayDimButton").onclick = () => {
     if (displayDim > 0) displayDim--;
     restart();
-    removeSliders();
-    createSliders();
-    updateUIValues();
   };
 
   document.querySelector("#incrementDisplayDimButton").onclick = () => {
     if (displayDim < 3) displayDim++;
     restart();
-    removeSliders();
-    createSliders();
-    updateUIValues();
   };
 
   document.querySelector("#decrementExtraDimButton").onclick = () => {
     if (extraDim > 0) extraDim--;
     restart();
-    removeSliders();
-    createSliders();
-    updateUIValues();
   };
   
   document.querySelector("#incrementExtraDimButton").onclick = () => {
     if (extraDim < 3) extraDim++;
     restart();
-    removeSliders();
-    createSliders();
-    updateUIValues();
   };
 }
 
 function createSliders() {
-  for (i = 0; i < extraDim; i++){
+  for (let i = 0; i < extraDim; i++){
     divs.push(createDiv(""));
     paras.push(createP("x<sub>" + (i+displayDim+1) + "</sub>:"));
     sliders.push(createSlider(0, depth, depth/2));
@@ -131,19 +138,16 @@ function removeSliders() {
 }
 
 function setup(){
+  init();
   canvas = createCanvas(window.innerWidth, window.innerHeight, WEBGL);
   buildUI();
   restart();
-  createSliders();
-  updateUIValues();
-  previousTime = Date.now();
 }
 
 function draw() {
-  background(50);
-  var dt;
+  background(backgroundColor);
   if (displayDim === 2 || displayDim === 1){
-    fill(0, 200, 0);
+    fill(ballColor);
   } else if (displayDim === 3){
     noStroke();
     push();
@@ -151,53 +155,50 @@ function draw() {
     translate(0, 0, -depth);
     plane(width, height);
     pop();
-    push();
     fill(50);
+    push();
     translate(0, height/2, -depth/2);
     rotateX(-PI/2);
     plane(width, depth);
     pop();
     push();
-    fill(50);
     translate(0, -height/2, -depth/2);
     rotateX(PI/2);
     plane(width, depth);
     pop();
-    push();
     fill(80);
+    push();
     translate(width/2, 0, -depth/2);
     rotateY(-PI/2);
     plane(depth, height);
     pop();
     push();
-    fill(80);
     translate(-width/2, 0, -depth/2);
     rotateY(PI/2);
     plane(depth, height);
     pop();
     noFill();
-    stroke(0, 200, 0);
-    strokeWeight(5);
+    stroke(ballColor);
   }
   
-  dt = (Date.now()- previousTime)/1000;
+  let dt = (Date.now()- previousTime)/1000;
   previousTime = Date.now();
   if (dt < 0.5){
     dimensions = [width, height];
-    for (var i = 2; i < dim; i++){
+    for (let i = 2; i < dim; i++){
       dimensions.push(depth);
     }
     HyperBall.updateAll(hyperBalls, dt, dimensions);
-    for (var i = 0; i < hyperBalls.length; i++){
+    for (let i = 0; i < hyperBalls.length; i++){
       values = [];
-      for (var j = 0; j < dim; j++){
+      for (let j = 0; j < dim; j++){
         if (j < displayDim){
           values.push(null);
         } else {
           values.push(sliders[j-displayDim].value());
         }
       }
-      var result = hyperBalls[i].intersect(values);
+      let result = hyperBalls[i].intersect(values);
       if (result != null){
         if (displayDim == 0){
           let diameter = min(width, height)/50;
@@ -215,7 +216,7 @@ function draw() {
           push();
           translate(width/2-result.p.get(0), height/2-result.p.get(1), -result.p.get(2));
 	  strokeWeight(map(result.r, 0, depth/2, 0, 5));
-          sphere(result.r, 10, 6);
+          sphere(result.r, 14, 10);
           pop();
         }
       }
