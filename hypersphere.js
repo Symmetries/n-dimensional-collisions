@@ -1,88 +1,80 @@
-class HyperBall{
-    constructor(p, r, m, v){
-        this.p = p;
-        this.r = r;
-        this.dim = p.n;
-        this.m = m;
-        this.v = v;
-    }
-    
-    update(dt) {
-        this.p = Vector.add(this.p, this.v.scale(dt));
-    }
-    
-    intersect(values){
-        var firstNum = null;
-        var firstIndex = -1;
-        var count = 0;
-        
-        
-        while (firstNum === null && count < values.length){
-            if (values[count] !== null){
-                firstNum = values[count];
-                firstIndex = count;
-            }
-            count++;
-        }
+class Hyperball {
+  constructor(radius, pos, vel, acc, mass, dim) {
+    this.radius = radius;
+    this.pos = pos;
+    this.vel = vel;
+    this.acc = acc;
+    this.mass = mass;
+    this.dim = dim;
+  }
 
-        if (firstNum === null){
-            return this;
-        } else {
-            var newValues = [];
-            var newCoords = [];
-            var rSquared = this.r**2-(this.p.get(firstIndex)-firstNum)**2;
-            if (rSquared > 0){
-                for (var i = 0; i < values.length; i++){
-                    if (i !== firstIndex){
-                        newValues.push(values[i]);
-                        newCoords.push(this.p.get(i));
-                    }
-                }
-                var crossSection = new HyperBall(new Vector(newCoords), rSquared**0.5);
-                return crossSection.intersect(newValues);
-            } else {
-                return null;
-            }
-        }
+  update(box, dt) {
+    this.vel = Vector.add(this.vel, this.acc.scale(dt));
+    this.pos = Vector.add(this.pos, this.vel.scale(dt));
+
+    for (let i = 0; i < this.dim; i++) {
+      if (this.pos.get(i) < this.radius && this.vel.get(i) < 0) {
+        this.vel = this.vel.flip(i);
+      } 
+
+      if (this.pos.get(i) > box[i] - this.radius && this.vel.get(i) > 0) {
+        this.vel = this.vel.flip(i);
+      }
     }
-    
-    
-    static overlap(b1, b2, dir){
-        return Vector.sub(b1.p, b2.p).norm() < b1.r + b2.r && 
-            (Vector.dot(Vector.sub(b1.p, b2.p),Vector.sub(b1.v, b2.v)) < 0 || !dir);
+  }
+
+  static updateAll(hyperballs, box, dt) {
+    hyperballs.forEach(hyperball =>
+      hyperball.update(box, dt)
+    );
+
+    for (let i = 0; i < hyperballs.length; i++) {
+      for (let j = i + 1; j < hyperballs.length; j++) {
+        if (Hyperball.isColliding(hyperballs[i], hyperballs[j])) {
+          Hyperball.collisionResponse(hyperballs[i], hyperballs[j]);
+        }
+      }
     }
-    
-    static updateAll(hyperBalls, dt, dims){
-        for (var i = 0; i < hyperBalls.length; i++){
-            var s = hyperBalls[i].p;
-            var v = hyperBalls[i].v;
-            var r = hyperBalls[i].r;
-            for (var j = 0; j < dims.length; j++){
-                if ((s.get(j) < r && v.get(j) < 0) || (s.get(j)+ r> dims[j] && v.get(j)) > 0){
-                    hyperBalls[i].v = v.reflect(j);
-                }
-            }
-        }
-        for (var i = 0; i < hyperBalls.length; i++){
-            for (var j = i + 1; j < hyperBalls.length; j++){
-                if (HyperBall.overlap(hyperBalls[i], hyperBalls[j], true)){
-                    var vA = hyperBalls[i].v;
-                    var vB = hyperBalls[j].v;
-                    var sA = hyperBalls[i].p;
-                    var sB = hyperBalls[j].p;
-                    var mA = hyperBalls[i].m;
-                    var mB = hyperBalls[j].m;
-                    var s = Vector.sub(sB, sA);
-                    
-                    var lambda = -2*mA*mB/(mA+mB)*Vector.dot(s, Vector.sub(vB, vA))/Vector.dot(s, s); 
-                    
-                    hyperBalls[i].v = Vector.add(s.scale(-lambda/mA), vA);
-                    hyperBalls[j].v = Vector.add(s.scale(lambda/mB), vB);
-                }
-            }
-        }
-        for (var i = 0; i < hyperBalls.length; i++){
-            hyperBalls[i].update(dt);
-        }
+  }
+
+  crossSection(cuts) {
+    let pos = this.pos.values.slice();
+    let r = this.radius;
+
+    for (let kv of cuts) {
+      let i = kv[0];
+      let c = kv[1];
+      r = (r**2 - (this.pos.get(i) - c)**2)**0.5;
+      pos.splice(i, 1);
+
+      if (isNaN(r)) {
+        return null;
+      }
     }
+    return new Hyperball(r, new Vector(pos));
+  }
+
+  static isToward(h1, h2) {
+    return Vector.dot(Vector.sub(s2, s1), Vector.sub(v2, v1)) < 0;
+  }
+
+  static isColliding(h1, h2) {
+    return Vector.dist(h1.pos, h2.pos) < h1.radius + h2.radius;
+  }
+
+  static collisionResponse(h1, h2) {
+    let m1 = h1.mass;
+    let m2 = h2.mass;
+    let s1 = h1.pos;
+    let s2 = h2.pos;
+    let v1 = h1.vel;
+    let v2 = h2.vel;
+    let lambda = -2 * m1 * m2 / (m1 + m2) * 
+      Vector.dot(Vector.sub(s2, s1), Vector.sub(v2, v1)) /
+      Vector.sub(s2, s1).norm**2;
+
+    h1.vel = Vector.add(Vector.sub(s2, s1).scale(-lambda / m1), v1);
+    h2.vel = Vector.add(Vector.sub(s2, s1).scale(lambda / m2), v2);
+  }
 }
+

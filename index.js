@@ -9,11 +9,11 @@
 /*global rotateY*/
 /*global pop*/
 /*global PI*/
-/*global HyperBall*/
+/*global Hyperball*/
 /*global Vector*/
 
 let previousTime;
-let hyperBalls;
+let hyperballs;
 let dim;
 let extraDim;
 let displayDim;
@@ -33,7 +33,7 @@ let ballColor;
 
 function init() {
   previousTime = Date.now();
-  hyperBalls = [];
+  hyperballs = [];
   dim = 4;
   extraDim = 1;
   displayDim = 3;
@@ -50,7 +50,7 @@ function restart(){
   dim = displayDim + extraDim
   numBalls = 2**dim;
   depth = Math.min(width, height);
-  hyperBalls = [];
+  hyperballs = [];
   dimensions = [width, height];
   for (let i = 2; i < dim; i++){
     dimensions.push(depth);
@@ -63,19 +63,21 @@ function restart(){
       r *= 0.99;
       let v = [];
       let p = [];
+      let a = [];
       for (let j = 0; j < dim; j++){
-          v.push(50*Math.random());
-          p.push(r + (dimensions[j]-2*r)*Math.random());
+        v.push(50*Math.random());
+        p.push(r + (dimensions[j]-2*r)*Math.random());
+        a.push(0);
       }
-      test = new HyperBall(new Vector(p), r, r**dim, new Vector(v));
+      test = new Hyperball(r, new Vector(p), new Vector(v), new Vector(a), r**dim, dim);
       overlap = false;
-      for (let j = 0; j < hyperBalls.length; j++){
-        if (HyperBall.overlap(test, hyperBalls[j], false)) {
+      for (let j = 0; j < hyperballs.length; j++){
+        if (Hyperball.isColliding(test, hyperballs[j])) {
           overlap = true;
         }
       }
     }
-    hyperBalls.push(test);
+    hyperballs.push(test);
   }
   removeSliders();
   createSliders();
@@ -188,35 +190,33 @@ function draw() {
     for (let i = 2; i < dim; i++){
       dimensions.push(depth);
     }
-    HyperBall.updateAll(hyperBalls, dt, dimensions);
-    for (let i = 0; i < hyperBalls.length; i++){
-      values = [];
+    Hyperball.updateAll(hyperballs, dimensions, dt);
+    for (let i = 0; i < hyperballs.length; i++){
+      cuts = [];
       for (let j = 0; j < dim; j++){
-        if (j < displayDim){
-          values.push(null);
-        } else {
-          values.push(sliders[j-displayDim].value());
+        if (j >= displayDim){
+          cuts.push([j, sliders[j-displayDim].value()]);
         }
       }
-      let result = hyperBalls[i].intersect(values);
+      let result = hyperballs[i].crossSection(cuts);
       if (result != null){
         if (displayDim == 0){
           let diameter = min(width, height)/50;
           ellipse(0, 0, diameter, diameter);
         } else if (displayDim == 1){
           let rectHeight = floor(min(width, height)/50);
-          rect(result.p.get(0) - result.r - width/2, -rectHeight/2,
-            2*result.r, rectHeight, 
+          rect(result.pos.get(0) - result.radius - width/2, -rectHeight/2,
+            2*result.radius, rectHeight, 
             rectHeight, rectHeight, rectHeight, rectHeight);
         } else if (displayDim == 2){
-          ellipse(result.p.get(0) - width/2,
-            result.p.get(1) - height/2,
-            2*result.r, 2*result.r);
+          ellipse(result.pos.get(0) - width/2,
+            result.pos.get(1) - height/2,
+            2*result.radius, 2*result.radius);
         } else if (displayDim === 3){
           push();
-          translate(width/2-result.p.get(0), height/2-result.p.get(1), -result.p.get(2));
-	  strokeWeight(map(result.r, 0, depth/2, 0, 5));
-          sphere(result.r, 14, 10);
+          translate(width/2-result.pos.get(0), height/2-result.pos.get(1), -result.pos.get(2));
+          strokeWeight(map(result.radius, 0, depth/2, 0, 5));
+          sphere(result.radius, 14, 10);
           pop();
         }
       }
