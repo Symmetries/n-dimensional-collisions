@@ -1,4 +1,4 @@
-# n-dimensional-collisions
+# N-Dimensional Collisions
 This project consists of a simple physics engine in an arbitrary number of dimensions.
 The engine itself is written in pure JavaScript.
 In addition, p5.js was used for rendering.
